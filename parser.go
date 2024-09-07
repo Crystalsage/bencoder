@@ -32,6 +32,7 @@ func Parse(bencodeString string) ([]interface{}, error) {
 	return parsedElements, nil
 }
 
+// <BE>    ::= <DICT> | <LIST> | <INT> | <STR>
 func ParseBencode(parser *Parser) (interface{}, error) {
 	char := parser.bencodeString[parser.cursor]
 
@@ -69,6 +70,7 @@ func ParseBencode(parser *Parser) (interface{}, error) {
 	return nil, errors.New("Something went wrong!")
 }
 
+// <DICT>  ::= "d" 1 * (<STR> <BE>) "e"
 func processDictionary(parser *Parser) (map[string]interface{}, error) {
 	decodedDictionary := make(map[string]interface{})
 
@@ -159,6 +161,7 @@ func processString(parser *Parser) (string, error) {
 	}
 
 	stringLength, err := strconv.Atoi(stringLengthString)
+
 	if (err != nil) {
 		return "", errors.New(fmt.Sprintf("Error converting string length to an integer: %s", err))
 	}
