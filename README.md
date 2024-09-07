@@ -19,3 +19,8 @@ Attempts to parse Bencode based on the following augmented BNF grammar.
 - [x] Integers
 - [x] Lists
 - [x] Dictionaries
+
+## Goal (Achieved)
+The parser should be able to parse the bencoded string contained in `sample.b` (From here: https://blog.jse.li/posts/torrent/)
+
+Execute with `go run *.go sample.b`.
