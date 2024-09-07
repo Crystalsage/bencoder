@@ -17,5 +17,5 @@ Attempts to parse Bencode based on the following augmented BNF grammar.
 ## Progress
 - [x] Strings
 - [x] Integers
-- [ ] Lists
-- [ ] Dictionaries
+- [x] Lists
+- [x] Dictionaries

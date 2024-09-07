@@ -15,64 +15,107 @@ type Parser struct {
 	cursor int
 }
 
-func Parse(parser *Parser) string {
-	return ParseBencode(parser.bencodeString)
-}
-
-func ParseBencode(bencodeString string) []string {
-	var parsedElements []string
-
+func Parse(bencodeString string) ([]interface{}, error) {
 	parser := Parser { bencodeString, 0 }
 
-	for parser.cursor != len(bencodeString) - 1 {
-		char := bencodeString[parser.cursor]
+	var parsedElements []interface{}
 
-		if unicode.IsDigit(rune(char)) {
-			decodedString, err := processString(&parser)
-			if (err != nil) {
-				fmt.Println(err);
-				return parsedElements;
-			}
-			parsedElements = append(parsedElements, decodedString)
-			fmt.Println(decodedString)
-		}
+	for (parser.cursor != len(parser.bencodeString) - 1) {
+		decodedElement, err := ParseBencode(&parser)
 
-		if char == 'i' {
-			decodedInteger, err := processInteger(&parser)
-			if (err != nil) {
-				fmt.Println(err)
-				return parsedElements;
-			}
-			parsedElements = append(parsedElements, decodedInteger)
-			fmt.Println(decodedInteger)
+		if (err != nil) {
+			return nil, err
 		}
-
-		if char == 'l' {
-			decodedList, err := processList(&parser)
-			if (err != nil) {
-				fmt.Println(err)
-				return parsedElements;
-			}
-			parsedElements = append(parsedElements, decodedList)
-			fmt.Println(decodedList)
-		}
+		parsedElements = append(parsedElements, decodedElement)
 	}
 
-	return parsedElements
+	return parsedElements, nil
+}
+
+func ParseBencode(parser *Parser) (interface{}, error) {
+	char := parser.bencodeString[parser.cursor]
+
+	if unicode.IsDigit(rune(char)) {
+		decodedString, err := processString(parser)
+		if (err != nil) {
+			return nil, err
+		}
+		return decodedString, nil
+	}
+
+	if char == 'i' {
+		decodedInteger, err := processInteger(parser)
+		if (err != nil) {
+			return nil, err;
+		}
+		return decodedInteger, nil;
+	}
+
+	if char == 'l' {
+		decodedList, err := processList(parser)
+		if (err != nil) {
+			return nil, err;
+		}
+		return decodedList, nil
+	}
+
+	if char == 'd' {
+		decodedDictionary, err := processDictionary(parser)
+		if (err != nil) {
+			return nil, err;
+		}
+		return decodedDictionary, nil
+	}
+	return nil, errors.New("Something went wrong!")
+}
+
+func processDictionary(parser *Parser) (map[string]interface{}, error) {
+	decodedDictionary := make(map[string]interface{})
+
+	// skip over 'd'
+	parser.cursor += 1
+
+	for parser.bencodeString[parser.cursor] != 'e' {
+		key, keyErr := processString(parser)
+		value, valueErr := ParseBencode(parser)
+
+		if keyErr != nil {
+			return nil, keyErr
+		} else if valueErr != nil {
+			return nil, valueErr
+		}
+
+		decodedDictionary[key] = value
+	}
+
+	if (parser.bencodeString[parser.cursor] == 'e') {
+		parser.cursor += 1
+	}
+
+	return decodedDictionary, nil
 }
 
 // <LIST>  ::= "l" 1 * <BE>         "e"
-func processList(parser *Parser) (int, error) {
-	var listString string
-
-	fmt.Println("Parsing list: " + parser.bencodeString)
-
+func processList(parser *Parser) (interface{}, error) {
+	var parsedList []interface{}
 	// skip over 'l'
 	parser.cursor += 1
 
-	parsedList := Parse(&parser)
+	for parser.bencodeString[parser.cursor] != 'e' {
+		parsedElement, err := ParseBencode(parser)
+		if (err != nil) {
+			return nil, err
+		}
+		parsedList = append(parsedList, parsedElement)
+	}
 
-	return 0, errors.New(listString)
+	if (parser.bencodeString[parser.cursor] != 'e') {
+		return nil, errors.New("Unexpected end of list. Expected 'e'")
+	}
+
+	parser.cursor += 1
+
+	return parsedList, nil
 }
 
 // <INT>   ::= "i"     <SNUM>       "e"

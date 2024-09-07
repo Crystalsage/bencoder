@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func main() { 
+func main() {
 	var args []string = os.Args
 	if len(args) < 2 {
 		fmt.Println("Missing filename!")
@@ -16,7 +16,12 @@ func main() {
 	if (err != nil) {
 		fmt.Fprintf(os.Stderr, "Error reading file!")
 	}
-	Parse(bencodeString)
+	
+	parsedElements, err := Parse(bencodeString)
+	if (err != nil) {
+		fmt.Println(err)
+	}
+	fmt.Println(parsedElements)
 }
 
 func readFile(filename string) (string, error) {
