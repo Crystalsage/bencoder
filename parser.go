@@ -15,7 +15,13 @@ type Parser struct {
 	cursor int
 }
 
-func Parse(bencodeString string) {
+func Parse(parser *Parser) string {
+	return ParseBencode(parser.bencodeString)
+}
+
+func ParseBencode(bencodeString string) []string {
+	var parsedElements []string
+
 	parser := Parser { bencodeString, 0 }
 
 	for parser.cursor != len(bencodeString) - 1 {
@@ -25,8 +31,9 @@ func Parse(bencodeString string) {
 			decodedString, err := processString(&parser)
 			if (err != nil) {
 				fmt.Println(err);
-				return;
+				return parsedElements;
 			}
+			parsedElements = append(parsedElements, decodedString)
 			fmt.Println(decodedString)
 		}
 
@@ -34,8 +41,9 @@ func Parse(bencodeString string) {
 			decodedInteger, err := processInteger(&parser)
 			if (err != nil) {
 				fmt.Println(err)
-				return;
+				return parsedElements;
 			}
+			parsedElements = append(parsedElements, decodedInteger)
 			fmt.Println(decodedInteger)
 		}
 
@@ -43,11 +51,28 @@ func Parse(bencodeString string) {
 			decodedList, err := processList(&parser)
 			if (err != nil) {
 				fmt.Println(err)
-				return;
+				return parsedElements;
 			}
+			parsedElements = append(parsedElements, decodedList)
 			fmt.Println(decodedList)
 		}
 	}
+
+	return parsedElements
+}
+
+// <LIST>  ::= "l" 1 * <BE>         "e"
+func processList(parser *Parser) (int, error) {
+	var listString string
+
+	fmt.Println("Parsing list: " + parser.bencodeString)
+
+	// skip over 'l'
+	parser.cursor += 1
+
+	parsedList := Parse(&parser)
+
+	return 0, errors.New(listString)
 }
 
 // <INT>   ::= "i"     <SNUM>       "e"
