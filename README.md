@@ -14,6 +14,10 @@ Attempts to parse Bencode based on the following augmented BNF grammar.
  <CHAR>  ::= %
  <DIGIT> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 ```
+
+**Warning**: This is the first thing I've ever written in Go, so the code quality 
+is terrible! :)
+
 ## Progress
 - [x] Strings
 - [x] Integers
